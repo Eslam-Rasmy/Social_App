@@ -1,6 +1,7 @@
 import type { NextFunction, Response, Request } from "express";
 import {
   otpTypesEnum,
+  type IRequset,
   type IsignIN,
   type IUser,
 } from "../../../Common/index.js";
@@ -14,9 +15,17 @@ import {
 import { localEmitter } from "../../../Utils/index.js";
 import { generateToken } from "../../../Utils/Tokens/tokens.utils.js";
 import { v4 as uuidv4 } from "uuid";
+import { BlackListedRepository } from "../../../DB/Repositorye/black-listed.repository.js";
+import { BlackList } from "../../../DB/Modles/blackList.model.js";
+import { ConflictExeption } from "../../../Utils/Errors/exception.utils.js";
+import { SucessResponse } from "../../../Utils/Responses/response-helper.utils.js";
+import { deleteFileCloudinary } from "../../../Common/Service/cloundiary.service.js";
 
 class AuthService {
   private userRepo: userRepository = new userRepository(UserModel);
+  private blackListRepo: BlackListedRepository = new BlackListedRepository(
+    BlackList
+  );
 
   signUp = async (req: Request, res: Response, next: NextFunction) => {
     const {
@@ -32,9 +41,8 @@ class AuthService {
 
     const isEmailExist = await this.userRepo.findonDocoment({ email }, "email");
     if (isEmailExist)
-      return res.status(409).json({
-        message: "Email already exists",
-        data: { invalidEmail: email },
+      throw new ConflictExeption("Email already exists", {
+        invalidEmail: email,
       });
 
     const encryptedNumber = encrypt(phoneNumber as string);
@@ -65,10 +73,9 @@ class AuthService {
       age,
       OTPS: [confirmationOtp],
     });
-    return res.status(201).json({
-      message: "User created successfully",
-      data: { newUser },
-    });
+    return res
+      .status(201)
+      .json(SucessResponse<IUser>("User creates successfully", 201, newUser));
   };
 
   signIn = async (req: Request, res: Response, next: NextFunction) => {
@@ -153,7 +160,7 @@ class AuthService {
       return res.status(400).json({ message: "No confirmation OTP found" });
     }
 
-    const isOtpMatched = compareHash(otp, confirmationOtp.value);    
+    const isOtpMatched = compareHash(otp, confirmationOtp.value);
     if (!isOtpMatched) {
       return res.status(400).json({ message: "Invalid OTP" });
     }
@@ -166,6 +173,37 @@ class AuthService {
     await (user as any).save();
 
     return res.status(201).json({ message: "User confirmed succesfully" });
+  };
+
+  logout = async (req: Request, res: Response) => {
+    const {
+      token: { jti, exp },
+    } = (req as unknown as IRequset).loggedInUser;
+    const blackListToken = await this.blackListRepo.createNewDocoment({
+      expirationDate: new Date(exp || Date.now() + 600000),
+      tokenId: jti,
+    });
+    res.status(200).json({
+      message: "user logged out successfully",
+      date: { blackListToken },
+    });
+  };
+
+  deletAcoount = async (req: Request, res: Response) => {
+    const {
+      user: { _id },
+    } = (req as unknown as IRequset).loggedInUser;
+
+    const deletedUser = await UserModel.findByIdAndDelete(_id);
+    if (!deletedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    if (deletedUser.profilePicture?.public_id) {
+      await deleteFileCloudinary(deletedUser.profilePicture.public_id);
+    }
+    return res
+      .status(201)
+      .json({ message: "User deleted succesfully", deletedUser });
   };
 }
 

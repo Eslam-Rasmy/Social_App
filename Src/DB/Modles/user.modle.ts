@@ -47,7 +47,8 @@ const userSchema = new mongoose.Schema<IUser>({
     type: Date,
   },
   profilePicture: {
-    type: String,
+    secure_url: String,
+    public_id: String,
   },
   coverPicture: {
     type: String,

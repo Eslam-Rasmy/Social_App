@@ -5,11 +5,18 @@ import {
   PROVIDERENUM,
   RoleEnum,
 } from "../../Common/Enums/user.enum.js";
+import type { JwtPayload } from "jsonwebtoken";
+import type { Request } from "express";
 
 interface IOTP {
   value: string;
   expiresAt: number;
   otpType: otpTypesEnum;
+}
+
+export interface IProfilePicture {
+  secure_url: string;
+  public_id: string;
 }
 
 interface IUser {
@@ -25,7 +32,7 @@ interface IUser {
   phoneNumber?: string | undefined;
   DOB?: Date | undefined;
   coverPicture?: string | undefined;
-  profilePicture?: string | undefined;
+  profilePicture?: IProfilePicture;
   isVerified?: boolean | undefined;
   age?: number | undefined;
   OTPS?: IOTP[] | undefined;
@@ -40,8 +47,8 @@ interface IEmailArgument {
   attachments?: [];
 }
 
-interface IBlack {
-  tokenId: string;
+interface IBlack extends Document {
+  tokenId: string | undefined;
   expirationDate: Date;
 }
 
@@ -50,7 +57,8 @@ interface IsignIN {
   password: string;
 }
 
- 
+interface IRequset extends Request {
+  loggedInUser: { user: IUser; token: JwtPayload };
+}
 
-
-export type { IUser, IEmailArgument, IBlack, IsignIN };
+export type { IUser, IEmailArgument, IBlack, IsignIN, IRequset };

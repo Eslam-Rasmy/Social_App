@@ -1,3 +1,4 @@
+import type mongoose from "mongoose";
 import type { FilterQuery, Model, ProjectionType, QueryOptions } from "mongoose";
 
 export abstract class BaseRepository<T> {
@@ -12,7 +13,9 @@ export abstract class BaseRepository<T> {
     return await this.model.findOne(filters,projection,options);
   }
 
-  findonDocomentById() {}
+  async findonDocomentById(id:mongoose.Schema.Types.ObjectId,projection?:ProjectionType<T>,options?:QueryOptions<T>):Promise<T|null> {
+    return await this.model.findById(id,projection,options)
+  }
 
   updateOneDocoment() {}
 

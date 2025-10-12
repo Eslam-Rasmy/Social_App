@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import type { JwtPayload, SignOptions } from "jsonwebtoken";
+import type { JwtPayload, SignOptions, VerifyOptions } from "jsonwebtoken";
 
 export const generateToken = (
   payload: string | Buffer | object,
@@ -11,7 +11,8 @@ export const generateToken = (
 
 export const verifyToken = (
   token: string,
-  secret: string
+  secret: string,
+  options?: VerifyOptions
 ): string | JwtPayload => {
-  return jwt.verify(token, secret);
+  return jwt.verify(token, secret,options) as JwtPayload
 };
