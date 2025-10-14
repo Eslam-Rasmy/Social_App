@@ -20,6 +20,7 @@ import { BlackList } from "../../../DB/Modles/blackList.model.js";
 import { ConflictExeption } from "../../../Utils/Errors/exception.utils.js";
 import { SucessResponse } from "../../../Utils/Responses/response-helper.utils.js";
 import { deleteFileCloudinary } from "../../../Common/Service/cloundiary.service.js";
+import type { SignUpBodyType } from "../../../Common/Types/validators.types.js";
 
 class AuthService {
   private userRepo: userRepository = new userRepository(UserModel);
@@ -37,7 +38,7 @@ class AuthService {
       DOB,
       phoneNumber,
       password,
-    }: Partial<IUser> = req.body;
+    }: SignUpBodyType = req.body; 
 
     const isEmailExist = await this.userRepo.findonDocoment({ email }, "email");
     if (isEmailExist)
