@@ -6,6 +6,8 @@ import {
   RoleEnum,
 } from "../../Common/Enums/user.enum.js";
 import type { IUser } from "../../Common/index.js";
+import { encrypt, decrypt } from "../../Utils/Encryption/crypto.utils.js";
+import { generateHash } from "../../Utils/Encryption/hash.utils.js";
 
 const userSchema = new mongoose.Schema<IUser>({
   firstName: {
@@ -78,6 +80,28 @@ const userSchema = new mongoose.Schema<IUser>({
       otpType: { type: String, enum: otpTypesEnum, required: true },
     },
   ],
+});
+
+userSchema.pre("save", function () {
+  if (this.isModified("password")) {
+    this.password = generateHash(this.password as string);
+  }
+
+  if (this.isModified("phoneNumber")) {
+    this.phoneNumber = encrypt(this.phoneNumber as string);
+  }
+});
+
+userSchema.post(/^find/, function (doc) {
+  if ((this as unknown as { op: string }).op == "find") {
+    doc.forEach((user: IUser) => {
+      if (user.phoneNumber) {
+        user.phoneNumber = decrypt(user.phoneNumber as string);
+      }
+    });
+  } else {
+    doc.phoneNumber = decrypt(doc.phoneNumber as string);
+  }
 });
 
 const UserModel = mongoose.model<IUser>("User", userSchema);

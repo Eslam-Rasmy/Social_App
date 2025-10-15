@@ -7,7 +7,6 @@ import {
 } from "../../../Common/index.js";
 import { userRepository } from "../../../DB/Repositorye/user.repository.js";
 import { UserModel } from "../../../DB/Modles/user.modle.js";
-import { encrypt } from "../../../Utils/Encryption/crypto.utils.js";
 import {
   generateHash,
   compareHash,
@@ -46,10 +45,6 @@ class AuthService {
         invalidEmail: email,
       });
 
-    const encryptedNumber = encrypt(phoneNumber as string);
-
-    const hashPassword = generateHash(password as string);
-
     const otp = Math.floor(Math.random() * 1000000).toString();
     localEmitter.emit("sendEmail", {
       to: email,
@@ -67,10 +62,10 @@ class AuthService {
       firstName,
       lastName,
       email,
-      password: hashPassword,
+      password,
       gender,
       DOB,
-      phoneNumber: encryptedNumber,
+      phoneNumber,
       age,
       OTPS: [confirmationOtp],
     });
