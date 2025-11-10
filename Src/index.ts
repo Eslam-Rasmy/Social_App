@@ -6,10 +6,18 @@ import type { NextFunction, Response, Request } from "express";
 import { HttpException } from "./Utils/Errors/http.exception.utils.js";
 import { FailedResponse } from "./Utils/Responses/response-helper.utils.js";
 import { profileController } from "./Modules/Profiles/profile.controller.js";
+import { getIo, ioIntializer } from "./Gateways/socketIo.gateway.js";
+import cors from "cors";
+
+
 
 const app = express();
 
+
 app.use(express.json());
+
+
+app.use(cors());
 
 dbConnection();
 
@@ -39,6 +47,10 @@ app.use(
 );
 
 const port: number | string = process.env.PORT || 5000;
-app.listen(port, () => {
-  console.log("Server is running");
+const server = app.listen(port, () => {
+  console.log(`Server is running  + ${port}`);
 });
+
+
+ioIntializer(server)
+

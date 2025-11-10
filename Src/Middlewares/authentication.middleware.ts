@@ -21,7 +21,6 @@ export const authnetication = async (
   if (!accessToken) {
     throw next(new HttpException("please login first",400))
     }
-  
 
   const [prefix, token] = accessToken.split(" ");
   if (prefix !== process.env.JWT_PREFIX || !token) {

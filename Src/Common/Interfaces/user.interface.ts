@@ -1,5 +1,6 @@
 import { Types } from "mongoose";
 import {
+  friendShipStatusEnum,
   GenderEnum,
   otpTypesEnum,
   PROVIDERENUM,
@@ -7,6 +8,26 @@ import {
 } from "../../Common/Enums/user.enum.js";
 import type { JwtPayload } from "jsonwebtoken";
 import type { Request } from "express";
+
+export interface IMessage {
+  _id?: Types.ObjectId;
+  text?: string;
+  conversationId: Types.ObjectId;
+  senderId: Types.ObjectId;
+  attachments?: string[];
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface IConversation {
+  _id?: Types.ObjectId;
+  type?: "direct" | "group" | string ;
+  name?: string ;
+  members?: Types.ObjectId[] | undefined;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
 
 interface IOTP {
   value: string;
@@ -61,4 +82,10 @@ interface IRequset extends Request {
   loggedInUser: { user: IUser; token: JwtPayload };
 }
 
-export type { IUser, IEmailArgument, IBlack, IsignIN, IRequset };
+interface IFriendShip {
+  requestFromId: Types.ObjectId;
+  requestToId: Types.ObjectId;
+  status: friendShipStatusEnum;
+}
+
+export type { IUser, IEmailArgument, IBlack, IsignIN, IRequset, IFriendShip };
